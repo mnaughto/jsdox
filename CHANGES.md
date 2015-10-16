@@ -1,7 +1,18 @@
 upcoming
 ------
 
-* nothing yet
+* don't crash because argv is missing with debug on (psq)
+* analyzer: include constructor params in class information (psq)
+
+0.4.9
+------
+
+* fix the error that occurs when a class has no methods (gaborsar)
+
+0.4.8
+------
+
+* fix for subdirectories with an empty parent (gaborsar)
 
 0.4.7
 ------

@@ -44,13 +44,14 @@ describe('jsdox', function() {
           nbFiles += 1;
         }
       });
-      expect(nbFiles).to.be(7);
+      expect(nbFiles).to.be(8);
 
       done();
     });
   });
 
-  it('generates non-empty output markdown files from the fixtures/ and the fixtures/under files and an under directory in outputs', function(done) {
+  it('generates non-empty output markdown files from the fixtures/ and the fixtures/under and' +
+      ' the fixtures/under_grandparent/under_parent files and an under and an under_grandparent/under_parent directory in outputs', function(done) {
     var cmd = bin + ' fixtures/ -o sample_output --rr -i';
 
     exec(cmd, function(err, stdout, stderr) {
@@ -58,6 +59,8 @@ describe('jsdox', function() {
 
       var nbFilesA = 0;
       var nbFilesB = 0;
+      var nbFilesC = 0;
+
       fs.readdirSync('sample_output/fixtures').forEach(function(outputFile) {
         if (!fs.statSync('sample_output/fixtures/' + outputFile).isDirectory()) {
           if (!fs.statSync('sample_output/' + outputFile).isDirectory()) {
@@ -69,7 +72,8 @@ describe('jsdox', function() {
           }
         }
       });
-      expect(nbFilesA).to.be(5);
+      expect(nbFilesA).to.be(6);
+
       fs.readdirSync('sample_output/fixtures/under').forEach(function(outputFile) {
         if (!fs.statSync('sample_output/fixtures/under/' + outputFile).isDirectory()) {
           var content = fs.readFileSync('sample_output/fixtures/under/' + outputFile).toString();
@@ -78,10 +82,22 @@ describe('jsdox', function() {
           fs.unlinkSync('sample_output/fixtures/under/' + outputFile);
         }
       });
-      fs.rmdirSync('sample_output/fixtures/under/');
-      fs.rmdirSync('sample_output/fixtures/');
       expect(nbFilesB).to.be(2);
 
+      fs.readdirSync('sample_output/fixtures/under_grandparent/under_parent').forEach(function(outputFile) {
+        if (!fs.statSync('sample_output/fixtures/under_grandparent/under_parent/' + outputFile).isDirectory()) {
+          var content = fs.readFileSync('sample_output/fixtures/under_grandparent/under_parent/' + outputFile).toString();
+          expect(content).not.to.be.empty();
+          nbFilesC += 1;
+          fs.unlinkSync('sample_output/fixtures/under_grandparent/under_parent/' + outputFile);
+        }
+      });
+      expect(nbFilesC).to.be(1);
+
+      fs.rmdirSync('sample_output/fixtures/under_grandparent/under_parent/');
+      fs.rmdirSync('sample_output/fixtures/under_grandparent/');
+      fs.rmdirSync('sample_output/fixtures/under/');
+      fs.rmdirSync('sample_output/fixtures/');
 
       done();
     });
@@ -101,7 +117,7 @@ describe('jsdox', function() {
         nbFiles += 1;
         hasIndex = hasIndex || (outputFile === 'index.md');
       });
-      expect(nbFiles).to.be(8);
+      expect(nbFiles).to.be(9);
       expect(hasIndex).to.be(true);
       //clean index for other tests
       fs.unlinkSync('sample_output/index.md');

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012-2014 Sutoiku
+Copyright (c) 2012-2015 Sutoiku
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -100,6 +100,22 @@ function generateForDir(filename, destination, templateDir, cb, fileCb) {
     return filelist;
   };
 
+  function mkdirParentSync(dirPath) {
+    try {
+      fs.mkdirSync(dirPath);
+    } catch(err) {
+      if (err) {
+        // parent directory not found
+        if (err.errno === 34) {
+          fs.mkdirSync(path.dirname(dirPath));
+          fs.mkdirSync(dirPath);
+        } else {
+          throw err;
+        }
+      }
+    }
+  }
+
   function oneFile(directory, file, cb) {
     var fullpath;
     if (argv.rr) {
@@ -128,7 +144,7 @@ function generateForDir(filename, destination, templateDir, cb, fileCb) {
 
       if (debug) {
         console.log(file + ' AST: ', util.inspect(result, false, 20));
-        console.log(file + ' Analyzed: ', util.inspect(analyze(result), false, 20));
+        console.log(file + ' Analyzed: ', util.inspect(analyze(result, argv), false, 20));
       }
 
       var data = analyze(result, argv);
@@ -144,7 +160,7 @@ function generateForDir(filename, destination, templateDir, cb, fileCb) {
           }
         }
         for (var j = 0; j < data.classes.length; j++) {
-          if (data.functions[j].className === undefined) {
+          if (data.functions[j] && data.functions[j].className === undefined) {
             var toAddClass = data.classes[j];
             toAddClass.file = path.relative(destination, fullpath);
             toAddClass.sourcePath = path.relative(destination, path.join(directory, path.basename(file)));
@@ -187,7 +203,7 @@ function generateForDir(filename, destination, templateDir, cb, fileCb) {
             if (argv.rr) {
               //create the sub-directories
               try {
-                fs.mkdirSync(path.join(destination, path.dirname(fileFullPath)));
+                mkdirParentSync(path.join(destination, path.dirname(fileFullPath)));
               } catch(err) {} //lazy way: if the file already exists, everything is alright.
               try {
                 oneFile(path.dirname(fileFullPath), fileFullPath, cb), touched++;
