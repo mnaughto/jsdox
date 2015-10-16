@@ -20,12 +20,21 @@ var fs = require('fs');
 var path = require('path');
 var q = require('q');
 var packageJson = require('./package.json');
-var jsdocParser = require('jsdoc3-parser');
 var analyze = require('./lib/analyze');
 var generateMD = require('./lib/generateMD');
 var index = {
   classes: [],
   functions: []
+};
+var JsDoc = require('jsdoc');
+var jsdocParser = function(filename, cb){
+  var jsdoc = new JsDoc(filename);
+
+  try {
+    cb(null, jsdoc.parseFiles());
+  } catch(err){
+    cb(err);
+  }
 };
 
 /**
